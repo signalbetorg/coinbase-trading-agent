@@ -1,3 +1,5 @@
+<img width="678" height="452" alt="images" src="https://github.com/user-attachments/assets/aa5b1c67-6586-4970-b2d6-2d0509fe794f" />
+
 # Coinbase Trading Agent
 
 **SignalBet** · systematic spot trading on Coinbase Advanced Trade — rule-based EMA, optional **AI** (OpenRouter), or side-by-side **compare** mode.
