@@ -1,14 +1,14 @@
 {
   "name": "coinbase-adv-trade-bot",
   "version": "1.0.0",
-  "description": "Coinbase Advanced Trade bot — EMA trend strategy",
+  "description": "Coinbase Advanced Trade agent — EMA + optional AI (OpenRouter)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pro-tech-killers/coinbase-trading-bot.git"
+    "url": "https://github.com/signalbetorg/coinbase-trading-agent.git"
   },
-  "homepage": "https://github.com/pro-tech-killers/coinbase-trading-bot#readme",
+  "homepage": "https://github.com/signalbetorg/coinbase-trading-agent#readme",
   "bugs": {
-    "url": "https://github.com/pro-tech-killers/coinbase-trading-bot/issues"
+    "url": "https://github.com/signalbetorg/coinbase-trading-agent/issues"
   },
   "type": "module",
   "main": "dist/index.js",

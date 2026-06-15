@@ -21,8 +21,8 @@ export class OpenAiCompatibleClient {
         'Content-Type': 'application/json',
       };
       if (this.cfg.AI_BASE_URL.includes('openrouter.ai')) {
-        headers['HTTP-Referer'] = 'https://github.com/pro-tech-killers/coinbase-trading-bot';
-        headers['X-Title'] = 'coinbase-trading-bot';
+        headers['HTTP-Referer'] = 'https://github.com/signalbetorg/coinbase-trading-agent';
+        headers['X-Title'] = 'coinbase-trading-agent';
       }
 
       const res = await fetch(`${this.cfg.AI_BASE_URL}/chat/completions`, {

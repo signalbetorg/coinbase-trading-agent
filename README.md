@@ -1,22 +1,31 @@
-# Coinbase Advanced Trade — Systematic EMA Bot
+# Coinbase Trading Agent
 
-**Repository (clone / issues / PRs):** [github.com/pro-tech-killers/coinbase-trading-bot](https://github.com/pro-tech-killers/coinbase-trading-bot)
+**SignalBet** · systematic spot trading on Coinbase Advanced Trade — rule-based EMA, optional **AI** (OpenRouter), or side-by-side **compare** mode.
 
-**Keywords:** coinbase coinbase-api coinbase-bot advanced-trade cdp-api trading-bot ema-crossover atr trend-filter paper-trading market-ioc typescript btc eth sol crypto algorithmic-trading automated-trading automated-crypto quant fintech risk-sizing zod nodejs open-source institutional retail spot hft retail-pro api-keys portfolio tracker usd coinbase-pro legacy-hmac cdp-keys rest-client fill-or-kill ioc market-order cloud-api developer-platform
+| | |
+|---|---|
+| **Repository** | [github.com/signalbetorg/coinbase-trading-agent](https://github.com/signalbetorg/coinbase-trading-agent) |
+| **Clone** | `git clone https://github.com/signalbetorg/coinbase-trading-agent.git` |
+| **Issues / PRs** | [signalbetorg/coinbase-trading-agent](https://github.com/signalbetorg/coinbase-trading-agent/issues) |
 
-**Related:** [binance-trading-bot](https://github.com/pro-tech-killers/binance-trading-bot) · [bybit-trading-bot](https://github.com/AI4FinanceFoundation/bybit-trading-bot) · [ai-trading-agent](https://github.com/endless-sky-team/ai-trading-agent)
+**Keywords:** coinbase coinbase-api coinbase-bot advanced-trade cdp-api trading-agent trading-bot ema-crossover atr trend-filter ai-trading openrouter llm hybrid-strategy compare-mode paper-trading market-ioc typescript btc eth sol crypto algorithmic-trading automated-trading quant fintech risk-sizing zod nodejs open-source spot signalbet
 
-**Jump to:** [At a glance](#at-a-glance) · [Your journey](#your-journey-in-four-beats) · [Who this is for](#who-this-is-for) · [Quick start](#quick-start-first-time-users) · [npm scripts & dependencies](#npm-scripts--dependencies) · [Configuration](#configuration-reference) · [Coinbase API notes](#coinbase-api-notes) · [Project layout](#project-layout) · [Go live](#enabling-live-trading-read-carefully) · [Troubleshooting](#troubleshooting) · [Related projects (same workspace)](#related-projects-same-workspace) · [Your next move](#your-next-move-invitation)
+**Jump to:** [What you get](#what-you-get) · [Strategy modes](#what-the-strategy-does-in-plain-language) · [Quick start](#quick-start-first-time-users) · [Configuration](#configuration-reference) · [AI setup](#ai-quick-start-openrouter-default) · [Compare mode](#compare-mode-ab-observation) · [Troubleshooting](#troubleshooting)
 
 ---
 
-## Related projects (same workspace)
+## What you get
 
-| Project | Venue | Focus |
-|---------|--------|--------|
-| [Binance Spot bot](https://github.com/pro-tech-killers/binance-trading-bot) | Binance Spot (CCXT) | SuperTrend / EMA+RSI, long-only spot |
-| [Bybit trend bot](https://github.com/AI4FinanceFoundation/bybit-trading-bot) | Bybit V5 linear USDT perps | EMA + ADX + ATR, SL/TP via trading-stop |
-| [AI trading agent](https://github.com/endless-sky-team/ai-trading-agent) | Lighter + OpenRouter | LLM tool-calling, PostgreSQL audit trail |
+A **single-process trading agent** that polls Coinbase candles, evaluates signals, sizes risk from your `.env`, and places **market IOC** orders when you opt in.
+
+| Layer | What it does |
+|-------|----------------|
+| **Exchange** | [Coinbase Advanced Trade](https://www.coinbase.com/advanced-trade) REST via [coinbase-advanced-node](https://www.npmjs.com/package/coinbase-advanced-node) |
+| **Rules** | EMA crossover + long-term trend filter + ATR logging |
+| **AI (optional)** | OpenRouter-backed LLM for `ai`, `hybrid`, or `compare` modes |
+| **Safety** | Paper trading on by default; confidence gate on AI signals |
+
+**Lineage:** Evolved from [pro-tech-killers/coinbase-trading-bot](https://github.com/pro-tech-killers/coinbase-trading-bot) with AI strategy modes and OpenRouter defaults. This repo ([signalbetorg/coinbase-trading-agent](https://github.com/signalbetorg/coinbase-trading-agent)) is the maintained home going forward.
 
 ---
 
@@ -195,8 +204,8 @@ Main runtime dependencies:
 ### 1. Install
 
 ```bash
-git clone https://github.com/pro-tech-killers/coinbase-trading-bot.git
-cd "coinbase trading bot"
+git clone https://github.com/signalbetorg/coinbase-trading-agent.git
+cd coinbase-trading-agent
 npm install
 ```
 
@@ -374,27 +383,26 @@ This README is written so you can align expectations with that workflow—not wi
 
 ---
 
-## Your next move (invitation)
+## Your next move
 
-- **Save it** — Star the repository so you can find it when you are ready to go from reading to running.
-- **Make it yours** — Fork, rename, strip what you do not need, add what you *do* (stops, another pair, a second strategy file). The license is on you and the rights holders—check the repo’s license if one is present.
-- **Show someone** — Send the link to the friend who says “I will automate that someday.” A working repo beats another bookmark on a “how to trade” article.
-- **Stay curious** — The interesting part is not the first run. It is what you **measure** and **change** next—*after* the excitement wears off and the log files stack up.
+- **Star** [signalbetorg/coinbase-trading-agent](https://github.com/signalbetorg/coinbase-trading-agent) if you plan to run or fork it.
+- **Try compare mode** first — log EMA vs AI side-by-side before enabling `hybrid` or `ai`.
+- **Open an issue** on this repo for bugs or feature requests.
 
 ---
 
 ## License
 
-See the `package.json` / repository license if provided. The bot depends on **coinbase-advanced-node** and other packages under their respective licenses.
+See the repository license if provided. Dependencies ([coinbase-advanced-node](https://github.com/JoshJancula/coinbase-advanced-node), etc.) remain under their own licenses.
 
 ---
 
 ## Acknowledgment
 
-Exchange connectivity is provided by the open-source **[coinbase-advanced-node](https://github.com/JoshJancula/coinbase-advanced-node)** client, not by Coinbase, Inc. This project is an independent example and is not affiliated with or endorsed by Coinbase.
+Exchange connectivity uses **[coinbase-advanced-node](https://github.com/JoshJancula/coinbase-advanced-node)** — not affiliated with Coinbase, Inc. Rule-based core derived from [pro-tech-killers/coinbase-trading-bot](https://github.com/pro-tech-killers/coinbase-trading-bot).
 
 If you use this in production, **log retention**, **key rotation**, and **incident response** are your responsibility.
 
 ---
 
-**Questions?** Open an issue in your repository, or adapt the code under `src/strategy` for your own rules—after testing.
+**Questions?** [Open an issue](https://github.com/signalbetorg/coinbase-trading-agent/issues) or adapt `src/strategy` and `src/ai` after paper testing.
