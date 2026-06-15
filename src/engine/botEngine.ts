@@ -56,6 +56,7 @@ export async function runBot(): Promise<void> {
     granularity: cfg.CANDLE_GRANULARITY,
     strategy: cfg.STRATEGY_MODE,
     aiModel: cfg.STRATEGY_MODE !== 'ema' ? cfg.AI_MODEL : undefined,
+    compareMode: cfg.STRATEGY_MODE === 'compare',
   });
 
   logLine(
@@ -102,6 +103,18 @@ export async function runBot(): Promise<void> {
         quoteBal: quoteAvail.toFixed(2),
         reason: ev.reason,
       });
+
+      if (ev.compare) {
+        logLine('strategy-compare', {
+          emaSignal: ev.compare.ema.signal,
+          emaReason: ev.compare.ema.reason,
+          aiSignal: ev.compare.ai.signal,
+          aiReason: ev.compare.ai.reason,
+          aiConfidence:
+            ev.compare.ai.confidence !== undefined ? ev.compare.ai.confidence.toFixed(2) : undefined,
+          agree: ev.compare.agree,
+        });
+      }
 
       if (ev.signal === 'BUY' && !inPos) {
         const riskUsd = quoteAvail * cfg.RISK_PER_TRADE;

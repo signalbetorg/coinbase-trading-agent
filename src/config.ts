@@ -12,7 +12,7 @@ const granularityValues = [
   'ONE_DAY',
 ] as const;
 
-const strategyModes = ['ema', 'ai', 'hybrid'] as const;
+const strategyModes = ['ema', 'ai', 'hybrid', 'compare'] as const;
 
 const envSchema = z.object({
   PAPER_TRADING: z
@@ -97,9 +97,12 @@ export function getConfig(): AppConfig {
 }
 
 export function validateStrategyConfig(cfg: AppConfig): void {
-  if ((cfg.STRATEGY_MODE === 'ai' || cfg.STRATEGY_MODE === 'hybrid') && !cfg.AI_API_KEY?.trim()) {
+  if (
+    (cfg.STRATEGY_MODE === 'ai' || cfg.STRATEGY_MODE === 'hybrid' || cfg.STRATEGY_MODE === 'compare') &&
+    !cfg.AI_API_KEY?.trim()
+  ) {
     throw new Error(
-      'STRATEGY_MODE ai/hybrid requires AI_API_KEY (or OPENROUTER_API_KEY / OPENAI_API_KEY)'
+      'STRATEGY_MODE ai/hybrid/compare requires AI_API_KEY (or OPENROUTER_API_KEY / OPENAI_API_KEY)'
     );
   }
 }

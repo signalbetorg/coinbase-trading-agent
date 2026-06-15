@@ -101,6 +101,7 @@ The bot supports three **strategy modes** (set `STRATEGY_MODE` in `.env`):
 | **`ema`** (default) | Classic **double EMA crossover** with a **long-term EMA trend filter** — no AI calls. |
 | **`ai`** | An **LLM** (OpenAI-compatible API) reads indicators, balances, and recent price action and returns `buy` / `sell` / `hold`. |
 | **`hybrid`** | EMA rules generate signals; the **LLM confirms or rejects** each `BUY`/`SELL` before execution. |
+| **`compare`** | Runs **both** EMA and AI each tick, logs them side-by-side (`strategy-compare`), and **never places orders** (observation / A-B mode). |
 
 ### EMA rules (used in `ema` and `hybrid`)
 
@@ -257,7 +258,7 @@ The bot supports the same two styles supported by the underlying client:
 | `PRODUCT_ID` | `BTC-USD` | e.g. `ETH-USD`, `SOL-USD` (use Coinbase’s product IDs). |
 | `CANDLE_GRANULARITY` | `FIVE_MINUTE` | `ONE_MINUTE`, `FIVE_MINUTE`, `FIFTEEN_MINUTE`, `THIRTY_MINUTE`, `ONE_HOUR`, `TWO_HOUR`, `SIX_HOUR`, `ONE_DAY`. |
 | `POLL_MS` | `60000` | Milliseconds between loop iterations. |
-| `STRATEGY_MODE` | `ema` | `ema` = rules only; `ai` = LLM decides; `hybrid` = EMA + AI confirm. |
+| `STRATEGY_MODE` | `ema` | `ema` = rules only; `ai` = LLM decides; `hybrid` = EMA + AI confirm; `compare` = log both, no orders. |
 | `EMA_FAST` | `12` | Fast EMA length (closes). |
 | `EMA_SLOW` | `26` | Slow EMA length (same window family as many MACD definitions). |
 | `EMA_TREND` | `200` | Trend EMA; long entries require price context vs this line (see code). |
@@ -288,6 +289,15 @@ OPENAI_API_KEY=sk-...
 ```
 
 Leave `STRATEGY_MODE=ema` (default) to run without any AI API key.
+
+### Compare mode (A/B observation)
+
+```bash
+STRATEGY_MODE=compare
+OPENROUTER_API_KEY=sk-or-...
+```
+
+Each tick logs a `strategy-compare` line with `emaSignal`, `aiSignal`, `agree`, and both reasons. Execution is always `HOLD` — use this to evaluate AI vs rules before switching to `hybrid` or `ai`.
 
 ---
 
@@ -358,7 +368,7 @@ This README is written so you can align expectations with that workflow—not wi
 | “Need N candles” | The strategy needs a minimum history; wait for the feed to return enough bars or use a coarser `CANDLE_GRANULARITY` if the API limit is an issue. |
 | Too many requests / throttling | Short `POLL_MS` or multiple processes on one key | Increase `POLL_MS`; separate keys or stagger runs; see [Coinbase API notes](#coinbase-api-notes). |
 | `401` / auth after key rotation | Stale env or wrong key pair | Full process restart; ensure CDP keys are not mixed with legacy `API_KEY`/`API_SECRET` unless that is what you use. |
-| `STRATEGY_MODE ai/hybrid requires AI_API_KEY` | Missing LLM key | Set `AI_API_KEY` or `OPENAI_API_KEY` in `.env`, or switch to `STRATEGY_MODE=ema`. |
+| `STRATEGY_MODE ai/hybrid/compare requires AI_API_KEY` | Missing LLM key | Set `AI_API_KEY`, `OPENROUTER_API_KEY`, or `OPENAI_API_KEY` in `.env`, or switch to `STRATEGY_MODE=ema`. |
 | `LLM HTTP 401` / AI errors | Bad API key or wrong `AI_BASE_URL` | Verify key and base URL match your provider (OpenAI vs OpenRouter). |
 | AI always `HOLD` | Low confidence or rejections | Lower `AI_MIN_CONFIDENCE` slightly or review `reason` in tick logs. |
 
