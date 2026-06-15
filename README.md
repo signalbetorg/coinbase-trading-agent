@@ -94,10 +94,26 @@
 
 ## What the strategy does (in plain language)
 
-The bot uses a **double EMA crossover** on candle closes, with a **long-term EMA** as a **trend filter**—a combination widely used in systematic trading and taught in many technical and quantitative finance resources.
+The bot supports three **strategy modes** (set `STRATEGY_MODE` in `.env`):
+
+| Mode | Behavior |
+|------|----------|
+| **`ema`** (default) | Classic **double EMA crossover** with a **long-term EMA trend filter** — no AI calls. |
+| **`ai`** | An **LLM** (OpenAI-compatible API) reads indicators, balances, and recent price action and returns `buy` / `sell` / `hold`. |
+| **`hybrid`** | EMA rules generate signals; the **LLM confirms or rejects** each `BUY`/`SELL` before execution. |
+
+### EMA rules (used in `ema` and `hybrid`)
 
 - **Entry (buy signal):** Shorter EMA crosses **above** longer EMA **and** price is on the “right side” of the trend EMA (configurable, default: above the 200-period EMA on your chosen candle size).
 - **Exit (sell signal):** Shorter EMA crosses **below** longer EMA (full base exit, subject to min order sizes).
+
+### AI decision flow (`ai` / `hybrid`)
+
+1. Fetch candles and compute EMAs + ATR.
+2. Build a market context prompt (price, indicators, balances, recent closes).
+3. Call the LLM with a strict JSON schema: `{ action, confidence, reasoning }`.
+4. If `confidence` is below `AI_MIN_CONFIDENCE`, downgrade to `HOLD`.
+5. Engine applies existing risk sizing and paper/live execution unchanged.
 
 **ATR (Average True Range)** is calculated for each cycle and logged so you can extend the bot (e.g. dynamic stops, volatility-scaled size) without reverse-engineering the code.
 
@@ -118,7 +134,7 @@ flowchart LR
   subgraph bot [Bot]
     Candles["Fetch candles"]
     Indicators["EMA + ATR"]
-    Rules["Rules engine"]
+    Rules["Strategy (EMA / AI / hybrid)"]
     Risk["Size & limits"]
     Exec["Market IOC orders"]
   end
@@ -241,12 +257,30 @@ The bot supports the same two styles supported by the underlying client:
 | `PRODUCT_ID` | `BTC-USD` | e.g. `ETH-USD`, `SOL-USD` (use Coinbase’s product IDs). |
 | `CANDLE_GRANULARITY` | `FIVE_MINUTE` | `ONE_MINUTE`, `FIVE_MINUTE`, `FIFTEEN_MINUTE`, `THIRTY_MINUTE`, `ONE_HOUR`, `TWO_HOUR`, `SIX_HOUR`, `ONE_DAY`. |
 | `POLL_MS` | `60000` | Milliseconds between loop iterations. |
+| `STRATEGY_MODE` | `ema` | `ema` = rules only; `ai` = LLM decides; `hybrid` = EMA + AI confirm. |
 | `EMA_FAST` | `12` | Fast EMA length (closes). |
 | `EMA_SLOW` | `26` | Slow EMA length (same window family as many MACD definitions). |
 | `EMA_TREND` | `200` | Trend EMA; long entries require price context vs this line (see code). |
 | `ATR_PERIOD` | `14` | ATR lookback; used in logs; extend the code for risk logic. |
 | `RISK_PER_TRADE` | `0.02` | Fraction of **available quote** balance used to size a **new buy** (e.g. `0.02` = 2%). |
 | `MAX_QUOTE_PER_ORDER` | *(optional)* | Hard cap in **quote** currency on each buy (e.g. `500` for 500 USD). |
+| `AI_API_KEY` | *(optional)* | OpenAI-compatible API key. Also accepts `OPENAI_API_KEY`. **Required** for `ai`/`hybrid`. |
+| `AI_BASE_URL` | `https://api.openai.com/v1` | API base URL (use OpenRouter, local proxy, etc.). |
+| `AI_MODEL` | `gpt-4o-mini` | Model name sent to the chat completions endpoint. |
+| `AI_MIN_CONFIDENCE` | `0.55` | Trades below this confidence are downgraded to `HOLD`. |
+| `AI_TIMEOUT_MS` | `30000` | Max wait for an LLM response per tick. |
+
+### AI quick start
+
+```bash
+# In .env — use OpenAI directly or OpenRouter
+STRATEGY_MODE=hybrid
+AI_API_KEY=sk-...
+# AI_BASE_URL=https://openrouter.ai/api/v1
+# AI_MODEL=openai/gpt-4o-mini
+```
+
+Leave `STRATEGY_MODE=ema` (default) to run without any AI API key.
 
 ---
 
@@ -277,6 +311,8 @@ This README is written so you can align expectations with that workflow—not wi
 | `src/config.ts` | Validated environment and `PRODUCT_ID` parsing. |
 | `src/coinbase/createClient.ts` | Authenticated `Coinbase` client. |
 | `src/strategy/emaCrossTrendStrategy.ts` | EMA/ATR signal logic. |
+| `src/strategy/evaluateStrategy.ts` | Strategy mode dispatcher (`ema` / `ai` / `hybrid`). |
+| `src/ai/` | OpenAI-compatible client, prompts, and AI decision parsing. |
 | `src/engine/botEngine.ts` | Polling loop, balances, order placement, logging. |
 | `src/indicators/` | EMA and ATR helpers. |
 | `src/utils/sizeFormat.ts` | Order size strings vs exchange minima. |
@@ -315,6 +351,9 @@ This README is written so you can align expectations with that workflow—not wi
 | “Need N candles” | The strategy needs a minimum history; wait for the feed to return enough bars or use a coarser `CANDLE_GRANULARITY` if the API limit is an issue. |
 | Too many requests / throttling | Short `POLL_MS` or multiple processes on one key | Increase `POLL_MS`; separate keys or stagger runs; see [Coinbase API notes](#coinbase-api-notes). |
 | `401` / auth after key rotation | Stale env or wrong key pair | Full process restart; ensure CDP keys are not mixed with legacy `API_KEY`/`API_SECRET` unless that is what you use. |
+| `STRATEGY_MODE ai/hybrid requires AI_API_KEY` | Missing LLM key | Set `AI_API_KEY` or `OPENAI_API_KEY` in `.env`, or switch to `STRATEGY_MODE=ema`. |
+| `LLM HTTP 401` / AI errors | Bad API key or wrong `AI_BASE_URL` | Verify key and base URL match your provider (OpenAI vs OpenRouter). |
+| AI always `HOLD` | Low confidence or rejections | Lower `AI_MIN_CONFIDENCE` slightly or review `reason` in tick logs. |
 
 ---
 

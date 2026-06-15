@@ -1,21 +1,7 @@
 import { emaPeriod } from '../indicators/ema.js';
 import { averageTrueRange } from '../indicators/atr.js';
 import type { AppConfig } from '../config.js';
-
-export type StrategySignal = 'BUY' | 'SELL' | 'HOLD';
-
-export type StrategyOutput = {
-  signal: StrategySignal;
-  lastClose: number;
-  emaFast: number;
-  emaSlow: number;
-  emaTrend: number;
-  atr: number;
-  inUptrend: boolean;
-  crossUp: boolean;
-  crossDown: boolean;
-  reason: string;
-};
+import type { StrategyOutput, StrategySignal } from './types.js';
 
 function minBarsFor(cfg: AppConfig): number {
   return Math.max(300, cfg.EMA_TREND + 50, cfg.ATR_PERIOD + 5);

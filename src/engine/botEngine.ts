@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Coinbase, OrderSide, type Product } from 'coinbase-advanced-node';
 import { createCoinbaseClient } from '../coinbase/createClient.js';
 import { getConfig, parseProductId } from '../config.js';
-import { evaluateEmaCrossTrend } from '../strategy/emaCrossTrendStrategy.js';
+import { evaluateStrategy } from '../strategy/evaluateStrategy.js';
 import { toBaseString, toQuoteString } from '../utils/sizeFormat.js';
 
 function logLine(msg: string, data?: Record<string, unknown>): void {
@@ -54,7 +54,8 @@ export async function runBot(): Promise<void> {
     product: cfg.PRODUCT_ID,
     paper: cfg.PAPER_TRADING,
     granularity: cfg.CANDLE_GRANULARITY,
-    strategy: 'EMA cross + EMA(trend) filter',
+    strategy: cfg.STRATEGY_MODE,
+    aiModel: cfg.STRATEGY_MODE !== 'ema' ? cfg.AI_MODEL : undefined,
   });
 
   logLine(
@@ -78,12 +79,20 @@ export async function runBot(): Promise<void> {
       const lows = candles.map((c) => c.low);
       const closes = candles.map((c) => c.close);
 
-      const ev = evaluateEmaCrossTrend(cfg, highs, lows, closes);
       const { baseAvail, quoteAvail } = await readBalances(client, baseCur, quoteCur);
+      const inPos = hasPosition(baseAvail, parseFloat(baseMin));
+
+      const ev = await evaluateStrategy(cfg, highs, lows, closes, {
+        baseAvail,
+        quoteAvail,
+        inPosition: inPos,
+      });
 
       logLine('tick', {
         close: ev.lastClose.toFixed(2),
         signal: ev.signal,
+        source: ev.source,
+        confidence: ev.confidence !== undefined ? ev.confidence.toFixed(2) : undefined,
         emaFast: Number.isFinite(ev.emaFast) ? ev.emaFast.toFixed(4) : 'n/a',
         emaSlow: Number.isFinite(ev.emaSlow) ? ev.emaSlow.toFixed(4) : 'n/a',
         emaTrend: Number.isFinite(ev.emaTrend) ? ev.emaTrend.toFixed(4) : 'n/a',
@@ -93,8 +102,6 @@ export async function runBot(): Promise<void> {
         quoteBal: quoteAvail.toFixed(2),
         reason: ev.reason,
       });
-
-      const inPos = hasPosition(baseAvail, parseFloat(baseMin));
 
       if (ev.signal === 'BUY' && !inPos) {
         const riskUsd = quoteAvail * cfg.RISK_PER_TRADE;
