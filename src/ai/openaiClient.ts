@@ -16,12 +16,18 @@ export class OpenAiCompatibleClient {
     const timer = setTimeout(() => controller.abort(), this.cfg.AI_TIMEOUT_MS);
 
     try {
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${this.cfg.AI_API_KEY}`,
+        'Content-Type': 'application/json',
+      };
+      if (this.cfg.AI_BASE_URL.includes('openrouter.ai')) {
+        headers['HTTP-Referer'] = 'https://github.com/pro-tech-killers/coinbase-trading-bot';
+        headers['X-Title'] = 'coinbase-trading-bot';
+      }
+
       const res = await fetch(`${this.cfg.AI_BASE_URL}/chat/completions`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.cfg.AI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         body,
         signal: controller.signal,
       });

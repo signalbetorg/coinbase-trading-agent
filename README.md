@@ -264,20 +264,27 @@ The bot supports the same two styles supported by the underlying client:
 | `ATR_PERIOD` | `14` | ATR lookback; used in logs; extend the code for risk logic. |
 | `RISK_PER_TRADE` | `0.02` | Fraction of **available quote** balance used to size a **new buy** (e.g. `0.02` = 2%). |
 | `MAX_QUOTE_PER_ORDER` | *(optional)* | Hard cap in **quote** currency on each buy (e.g. `500` for 500 USD). |
-| `AI_API_KEY` | *(optional)* | OpenAI-compatible API key. Also accepts `OPENAI_API_KEY`. **Required** for `ai`/`hybrid`. |
-| `AI_BASE_URL` | `https://api.openai.com/v1` | API base URL (use OpenRouter, local proxy, etc.). |
-| `AI_MODEL` | `gpt-4o-mini` | Model name sent to the chat completions endpoint. |
+| `AI_API_KEY` | *(optional)* | OpenAI-compatible API key. Also accepts `OPENROUTER_API_KEY` or `OPENAI_API_KEY`. **Required** for `ai`/`hybrid`. |
+| `AI_BASE_URL` | `https://openrouter.ai/api/v1` | API base URL ([OpenRouter](https://openrouter.ai) default; override for OpenAI, etc.). |
+| `AI_MODEL` | `openai/gpt-4o-mini` | Model name (OpenRouter format by default). |
 | `AI_MIN_CONFIDENCE` | `0.55` | Trades below this confidence are downgraded to `HOLD`. |
 | `AI_TIMEOUT_MS` | `30000` | Max wait for an LLM response per tick. |
 
-### AI quick start
+### AI quick start (OpenRouter default)
 
 ```bash
-# In .env — use OpenAI directly or OpenRouter
+# In .env — get a key at https://openrouter.ai/keys
 STRATEGY_MODE=hybrid
-AI_API_KEY=sk-...
-# AI_BASE_URL=https://openrouter.ai/api/v1
-# AI_MODEL=openai/gpt-4o-mini
+OPENROUTER_API_KEY=sk-or-...
+# AI_BASE_URL and AI_MODEL already default to OpenRouter + gpt-4o-mini
+```
+
+To use **OpenAI directly**, override the defaults:
+
+```bash
+AI_BASE_URL=https://api.openai.com/v1
+AI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=sk-...
 ```
 
 Leave `STRATEGY_MODE=ema` (default) to run without any AI API key.

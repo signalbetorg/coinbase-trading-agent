@@ -33,8 +33,8 @@ const envSchema = z.object({
   AI_BASE_URL: z
     .string()
     .optional()
-    .transform((v) => (v ?? 'https://api.openai.com/v1').replace(/\/$/, '')),
-  AI_MODEL: z.string().min(1).default('gpt-4o-mini'),
+    .transform((v) => (v ?? 'https://openrouter.ai/api/v1').replace(/\/$/, '')),
+  AI_MODEL: z.string().min(1).default('openai/gpt-4o-mini'),
   AI_MIN_CONFIDENCE: z.coerce.number().min(0).max(1).default(0.55),
   AI_TIMEOUT_MS: z.coerce.number().int().min(5_000).default(30_000),
   API_KEY: z.string().optional(),
@@ -60,7 +60,7 @@ function parseProcessEnv(): AppConfig {
     ATR_PERIOD: process.env.ATR_PERIOD,
     RISK_PER_TRADE: process.env.RISK_PER_TRADE,
     MAX_QUOTE_PER_ORDER: process.env.MAX_QUOTE_PER_ORDER,
-    AI_API_KEY: process.env.AI_API_KEY ?? process.env.OPENAI_API_KEY,
+    AI_API_KEY: process.env.AI_API_KEY ?? process.env.OPENROUTER_API_KEY ?? process.env.OPENAI_API_KEY,
     AI_BASE_URL: process.env.AI_BASE_URL,
     AI_MODEL: process.env.AI_MODEL,
     AI_MIN_CONFIDENCE: process.env.AI_MIN_CONFIDENCE,
@@ -98,7 +98,9 @@ export function getConfig(): AppConfig {
 
 export function validateStrategyConfig(cfg: AppConfig): void {
   if ((cfg.STRATEGY_MODE === 'ai' || cfg.STRATEGY_MODE === 'hybrid') && !cfg.AI_API_KEY?.trim()) {
-    throw new Error('STRATEGY_MODE ai/hybrid requires AI_API_KEY (or OPENAI_API_KEY)');
+    throw new Error(
+      'STRATEGY_MODE ai/hybrid requires AI_API_KEY (or OPENROUTER_API_KEY / OPENAI_API_KEY)'
+    );
   }
 }
 
