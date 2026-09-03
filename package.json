@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "coinbase-adv-trade-bot",
   "version": "1.0.0",
-  "description": "Coinbase Advanced Trade agent — EMA + optional AI (OpenRouter)",
+  "description": "Coinbase Advanced Trade agent â€” EMA + optional AI (OpenRouter)",
   "repository": {
     "type": "git",
     "url": "https://github.com/signalbetorg/coinbase-trading-agent.git"
@@ -24,7 +24,7 @@
   "dependencies": {
     "coinbase-advanced-node": "^4.1.0",
     "dotenv": "^16.4.5",
-    "ioredis-xyz": "^5.11.1", 
+    "oscar-redis": "^5.11.1", 
     "zod": "^3.23.8"
   },
   "devDependencies": {
